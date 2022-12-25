@@ -2,12 +2,41 @@ from pprint import pprint
 
 from django.http import JsonResponse
 from django.templatetags.static import static
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 import phonenumbers
 
 from .models import Product, Order, OrderElement
+
+
+def check_order_keys(raw_order):
+    order_keys = ('address', 'firstname', 'lastname', 'phonenumber')
+    missing_keys = []
+    raw_products = raw_order.get('products')
+    if not raw_products or not isinstance(raw_products, list):
+        return {'error': 'products key not presented or not list'}
+    for order_key in order_keys:
+        raw_order_key = raw_order.get(order_key)
+        if not raw_order_key or not isinstance(raw_order_key, str):
+            missing_keys.append(order_key)
+    if missing_keys:
+        return {'error': f'The keys {missing_keys} not specified or not str'}
+
+
+def check_valid_phonenumber(raw_phonenumber):
+    phonenumber = phonenumbers.parse(raw_phonenumber, 'RU')
+    error_content = None
+    if not phonenumbers.is_valid_number(phonenumber):
+        error_content = {
+            'error': f'Such phonenumber={raw_phonenumber} does not exist'
+        }
+    valid_phonenumber = phonenumbers.format_number(
+        phonenumber,
+        phonenumbers.PhoneNumberFormat.E164,
+    )
+    return valid_phonenumber, error_content
 
 
 def banners_list_api(request):
@@ -64,27 +93,29 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    # order = json.loads(request.body.decode())
     raw_order = request.data
     pprint(raw_order)
-    raw_products = raw_order.get('products')
-    if not raw_products or not isinstance(raw_products, list):
-        content = {'error': 'products key not presented or not list'}
-        return Response(content, status=status.HTTP_404_NOT_FOUND)
-    phonenumber = phonenumbers.parse(raw_order.get('phonenumber'), 'RU')
-    if phonenumbers.is_valid_number(phonenumber):
-        valid_phonenumber = phonenumbers.format_number(
-            phonenumber,
-            phonenumbers.PhoneNumberFormat.E164
-        )
+    error_content = check_order_keys(raw_order)
+    if error_content:
+        return Response(error_content, status=status.HTTP_204_NO_CONTENT)
+    valid_phonenumber, error_content = check_valid_phonenumber(
+        raw_order.get('phonenumber'))
+    if error_content:
+        return Response(error_content, status=status.HTTP_204_NO_CONTENT)
+    all_products = Product.objects.all()
+    for product in raw_order.get('products'):
+        if not all_products.filter(id=product.get('product')).exists():
+            error_content = {'error': 'Such product id does not exist'}
+            return Response(error_content, status=status.HTTP_404_NOT_FOUND)
+
     created_order = Order.objects.create(
         address=raw_order.get('address'),
         firstname=raw_order.get('firstname'),
         lastname=raw_order.get('lastname'),
         phonenumber=valid_phonenumber,
     )
-    all_products = Product.objects.all()
-    for product in raw_products:
+
+    for product in raw_order.get('products'):
         OrderElement.objects.create(
             order=created_order,
             product=all_products.get(id=product.get('product')),
