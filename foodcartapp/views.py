@@ -1,8 +1,9 @@
-import json
 from pprint import pprint
 
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 import phonenumbers
 
 from .models import Product, Order, OrderElement
@@ -60,8 +61,11 @@ def product_list_api(request):
     })
 
 
+@api_view(['POST'])
 def register_order(request):
-    order = json.loads(request.body.decode())
+    # order = json.loads(request.body.decode())
+    order = request.data
+    pprint(order)
     phonenumber = phonenumbers.parse(order.get('phonenumber'), 'RU')
     if phonenumbers.is_valid_number(phonenumber):
         valid_phonenumber = phonenumbers.format_number(
@@ -81,5 +85,4 @@ def register_order(request):
             product=all_products.get(id=product.get('product')),
             quantity=product.get('quantity'),
         )
-    pprint(order)
-    return JsonResponse({})
+    return Response()
