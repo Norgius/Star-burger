@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 import phonenumbers
 
 from .models import Product, Order, OrderElement
@@ -64,22 +65,26 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     # order = json.loads(request.body.decode())
-    order = request.data
-    pprint(order)
-    phonenumber = phonenumbers.parse(order.get('phonenumber'), 'RU')
+    raw_order = request.data
+    pprint(raw_order)
+    raw_products = raw_order.get('products')
+    if not raw_products or not isinstance(raw_products, list):
+        content = {'error': 'products key not presented or not list'}
+        return Response(content, status=status.HTTP_404_NOT_FOUND)
+    phonenumber = phonenumbers.parse(raw_order.get('phonenumber'), 'RU')
     if phonenumbers.is_valid_number(phonenumber):
         valid_phonenumber = phonenumbers.format_number(
             phonenumber,
             phonenumbers.PhoneNumberFormat.E164
         )
     created_order = Order.objects.create(
-        address=order.get('address'),
-        firstname=order.get('firstname'),
-        lastname=order.get('lastname'),
+        address=raw_order.get('address'),
+        firstname=raw_order.get('firstname'),
+        lastname=raw_order.get('lastname'),
         phonenumber=valid_phonenumber,
     )
     all_products = Product.objects.all()
-    for product in order.get('products'):
+    for product in raw_products:
         OrderElement.objects.create(
             order=created_order,
             product=all_products.get(id=product.get('product')),
