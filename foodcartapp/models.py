@@ -170,6 +170,12 @@ class OrderElement(models.Model):
         'количество',
         validators=[MinValueValidator(1)],
     )
+    price = models.DecimalField(
+        'cуммарная стоимость продукта',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
 
     class Meta:
         verbose_name = 'элемент заказа'

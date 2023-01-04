@@ -76,6 +76,9 @@ def register_order(request):
             order=created_order,
             product=all_products.get(id=product['product'].id),
             quantity=product['quantity'],
+            price=all_products.get(id=product['product'].id).price
+            * product['quantity'],
         )
+
     serializer = OrderSerializer(created_order)
     return Response(serializer.data)

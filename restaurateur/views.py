@@ -92,10 +92,7 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     all_orders = Order.objects.all().annotate(
-        total_price=Sum(
-            F('order_elements__product__price')
-            * F('order_elements__quantity')
-        )
+        total_price=Sum(F('order_elements__price'))
     ).order_by('-id')
     return render(request, template_name='order_items.html', context={
         'order_items': all_orders
