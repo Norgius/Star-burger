@@ -94,6 +94,18 @@ def view_orders(request):
     all_orders = Order.objects.all().annotate(
         total_price=Sum(F('order_elements__price'))
     ).order_by('-id')
+    order_items = []
+    for raw_order in all_orders:
+        order = {
+            'id': raw_order.id,
+            'status': raw_order.get_status_display(),
+            'total_price': raw_order.total_price,
+            'firstname': raw_order.firstname,
+            'lastname': raw_order.lastname,
+            'phonenumber': raw_order.phonenumber,
+            'address': raw_order.address,
+        }
+        order_items.append(order)
     return render(request, template_name='order_items.html', context={
-        'order_items': all_orders
+        'order_items': order_items
     })

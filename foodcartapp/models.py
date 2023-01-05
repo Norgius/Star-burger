@@ -125,6 +125,23 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+    RAW = 'RA'
+    ASSEMBLY = 'AS'
+    IN_DELIVERY = 'ID'
+    DELIVERED = 'DE'
+
+    ORDER_STATUS_CHOICES = [
+        (RAW, 'Необработанный'),
+        (ASSEMBLY, 'Сборка заказа'),
+        (IN_DELIVERY, 'В доставке'),
+        (DELIVERED, 'Доставлен')
+    ]
+    status = models.CharField(
+        max_length=2,
+        choices=ORDER_STATUS_CHOICES,
+        default=RAW,
+        db_index=True,
+    )
     address = models.CharField(
         'адрес',
         max_length=100,
