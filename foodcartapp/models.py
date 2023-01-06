@@ -131,16 +131,33 @@ class Order(models.Model):
     IN_DELIVERY = 'ID'
     DELIVERED = 'DE'
 
+    CASH = 'CA'
+    ELECTRONIC = 'EP'
+
     ORDER_STATUS_CHOICES = [
         (RAW, 'Необработанный'),
         (ASSEMBLY, 'Сборка заказа'),
         (IN_DELIVERY, 'В доставке'),
         (DELIVERED, 'Доставлен')
     ]
+
+    PAYMENT_CHOICES = [
+        (CASH, 'Наличными'),
+        (ELECTRONIC, 'Электронный')
+    ]
+
     status = models.CharField(
+        'Статус заказа',
         max_length=2,
         choices=ORDER_STATUS_CHOICES,
         default=RAW,
+        db_index=True,
+    )
+    payment = models.CharField(
+        'Способ оплаты',
+        max_length=2,
+        choices=PAYMENT_CHOICES,
+        default=ELECTRONIC,
         db_index=True,
     )
     address = models.CharField(

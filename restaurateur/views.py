@@ -99,6 +99,7 @@ def view_orders(request):
         order = {
             'id': raw_order.id,
             'status': raw_order.get_status_display(),
+            'payment': raw_order.get_payment_display(),
             'total_price': raw_order.total_price,
             'firstname': raw_order.firstname,
             'lastname': raw_order.lastname,
