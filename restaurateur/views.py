@@ -104,6 +104,7 @@ def view_orders(request):
             'lastname': raw_order.lastname,
             'phonenumber': raw_order.phonenumber,
             'address': raw_order.address,
+            'comment': raw_order.comment,
         }
         order_items.append(order)
     return render(request, template_name='order_items.html', context={

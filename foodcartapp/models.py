@@ -161,6 +161,10 @@ class Order(models.Model):
         'телефон',
         db_index=True,
     )
+    comment = models.TextField(
+        'комментарий',
+        blank=True,
+    )
 
     class Meta:
         verbose_name = 'заказ'
