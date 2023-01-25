@@ -3,11 +3,11 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Count, Prefetch
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -91,23 +91,16 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    all_orders = Order.objects.all().annotate(
-        total_price=Sum(F('order_elements__price'))
-    ).order_by('-id')
-    order_items = []
-    for raw_order in all_orders:
-        order = {
-            'id': raw_order.id,
-            'status': raw_order.get_status_display(),
-            'payment': raw_order.get_payment_display(),
-            'total_price': raw_order.total_price,
-            'firstname': raw_order.firstname,
-            'lastname': raw_order.lastname,
-            'phonenumber': raw_order.phonenumber,
-            'address': raw_order.address,
-            'comment': raw_order.comment,
-        }
-        order_items.append(order)
+    all_orders = Order.objects.exclude(status='DELIVERED')\
+        .select_related('selected_restaurant').annotate(
+            total_price=Sum(F('order_elements__price'))
+        ).order_by('-status').get_restaurants_able_fulfill_order()
+
+    for order in all_orders:
+        if order.selected_restaurant and order.status == 'RAW':
+            order.status = 'ASSEMBLY'
+            order.save()
+
     return render(request, template_name='order_items.html', context={
-        'order_items': order_items
+        'order_items': all_orders
     })

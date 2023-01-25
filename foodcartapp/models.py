@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
-
+import copy
 
 class Restaurant(models.Model):
     name = models.CharField(
@@ -125,39 +125,50 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
+class OrderQuerySet(models.QuerySet):
+    def get_restaurants_able_fulfill_order(self):
+        menu_items = RestaurantMenuItem.objects\
+            .filter(availability=True)\
+            .select_related('restaurant', 'product')
+
+        for order in self:
+            avalable_restaurants = []
+            for ordered_product in order.order_elements.values('product'):
+                avalable_restaurants.append(
+                    [menu_item.restaurant for menu_item in menu_items
+                     if ordered_product['product'] == menu_item.product.id])
+            sorted_avalable_restaurants = sorted(
+                avalable_restaurants, key=lambda x: len(x)
+            )
+            order.selected_restaurants = sorted_avalable_restaurants[0]
+        return self
+
+
 class Order(models.Model):
-    RAW = 'RA'
-    ASSEMBLY = 'AS'
-    IN_DELIVERY = 'ID'
-    DELIVERED = 'DE'
-
-    CASH = 'CA'
-    ELECTRONIC = 'EP'
-
     ORDER_STATUS_CHOICES = [
-        (RAW, 'Необработанный'),
-        (ASSEMBLY, 'Сборка заказа'),
-        (IN_DELIVERY, 'В доставке'),
-        (DELIVERED, 'Доставлен')
+        ('RAW', 'Необработанный'),
+        ('ASSEMBLY', 'Сборка заказа'),
+        ('IN_DELIVERY', 'В доставке'),
+        ('DELIVERED', 'Доставлен')
     ]
 
     PAYMENT_CHOICES = [
-        (CASH, 'Наличными'),
-        (ELECTRONIC, 'Электронный')
+        ('CASH', 'Наличными'),
+        ('ELECTRONIC', 'Электронный')
     ]
 
     status = models.CharField(
         'Статус заказа',
-        max_length=2,
+        max_length=15,
         choices=ORDER_STATUS_CHOICES,
-        default=RAW,
+        default='RAW',
         db_index=True,
     )
     payment = models.CharField(
         'Способ оплаты',
-        max_length=2,
+        max_length=15,
         choices=PAYMENT_CHOICES,
-        default=ELECTRONIC,
+        default='ELECTRONIC',
         db_index=True,
     )
     address = models.CharField(
@@ -200,6 +211,16 @@ class Order(models.Model):
         'комментарий',
         blank=True,
     )
+    selected_restaurant = models.ForeignKey(
+        Restaurant,
+        related_name='orders',
+        verbose_name="выбранный ресторан",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    objects = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'заказ'
