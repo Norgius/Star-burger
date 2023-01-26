@@ -126,21 +126,27 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderQuerySet(models.QuerySet):
-    def get_restaurants_able_fulfill_order(self):
+    def get_restaurants_able_fulfill_order(self, all_restaurants):
         menu_items = RestaurantMenuItem.objects\
             .filter(availability=True)\
             .select_related('restaurant', 'product')
-
         for order in self:
             avalable_restaurants = []
-            for ordered_product in order.order_elements.values('product'):
+            for ordered_product in order.order_elements.all():
                 avalable_restaurants.append(
                     [menu_item.restaurant for menu_item in menu_items
-                     if ordered_product['product'] == menu_item.product.id])
-            sorted_avalable_restaurants = sorted(
-                avalable_restaurants, key=lambda x: len(x)
-            )
-            order.selected_restaurants = sorted_avalable_restaurants[0]
+                     if ordered_product.product.id == menu_item.product.id])
+
+            capable_restaurants = []
+            for restaurant in all_restaurants:
+                amount = 0
+                for avalable_restaurant in avalable_restaurants:
+                    if restaurant in avalable_restaurant:
+                        amount += 1
+                if amount == len(avalable_restaurants):
+                    capable_restaurants.append(restaurant)
+
+            order.selected_restaurants = capable_restaurants
         return self
 
 

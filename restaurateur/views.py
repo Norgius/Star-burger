@@ -3,11 +3,12 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Sum, F, Count, Prefetch
+from django.db.models import Sum, F
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from foodcartapp.models import Product, Restaurant, Order
 
-from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
+from foodcartapp.utils import calculate_distance
 
 
 class Login(forms.Form):
@@ -91,12 +92,28 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    all_restaurants = Restaurant.objects.all()
     all_orders = Order.objects.exclude(status='DELIVERED')\
-        .select_related('selected_restaurant').annotate(
+        .select_related('selected_restaurant')\
+        .prefetch_related('order_elements__product').annotate(
             total_price=Sum(F('order_elements__price'))
-        ).order_by('-status').get_restaurants_able_fulfill_order()
+        ).order_by('-status')\
+        .get_restaurants_able_fulfill_order(all_restaurants)
 
     for order in all_orders:
+        suitable_restaurants = []
+        for selected_restaurant in order.selected_restaurants:
+            distance = calculate_distance(
+                order.address, selected_restaurant.address)
+            if distance is None:
+                order.selected_restaurants = None
+                break
+            suitable_restaurant = {'restaurant': selected_restaurant.name,
+                                   'distance': round(distance, 3)
+                                   }
+            suitable_restaurants.append(suitable_restaurant)
+        order.selected_restaurants = sorted(suitable_restaurants,
+                                            key=lambda x: x['distance'])
         if order.selected_restaurant and order.status == 'RAW':
             order.status = 'ASSEMBLY'
             order.save()

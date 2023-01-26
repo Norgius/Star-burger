@@ -36,16 +36,18 @@
         <td>{{ item.address }}</td>
         <td>{{ item.comment }}</td>
         <td>
-            {% if item.selected_restaurant %}
-              <p>Готовит {{ item.selected_restaurant.name }}</p>
-            {% else %}
+          {% if item.selected_restaurant %}
+            <p>Готовит {{ item.selected_restaurant.name }}</p>
+          {% elif item.selected_restaurants %}
             <details>
               <summary>Может быть приготовлен ресторанами:</summary>
               {% for restaurant in item.selected_restaurants %}
-                <li>{{ restaurant.name }}</li>
+                <li>{{ restaurant.restaurant }} - {{ restaurant.distance }} км</li>
               {% endfor %}
-            {% endif %}
-          </details>
+            </details>
+          {% else %}
+            <p>Ошибка определения координат</p>
+          {% endif %}
         </td>
         <td>
           <a href="{% url 'admin:foodcartapp_order_change' object_id=item.id %}?next={{ request.path|urlencode }}">Редактировать</a>
