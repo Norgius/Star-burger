@@ -58,6 +58,10 @@ pip install -r requirements.txt
 ```sh
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 ```
+Для функционирования проекта вам потребуется получить `ключ API Яндекс-геокодера`, перейдите по [ссылке](https://developer.tech.yandex.ru/) и получите API-ключ, выбрав `JavaScript API и HTTP Геокодер`. После получения ключа, запишите его в `.env`:
+```
+YANDEX_GEOCODER_APIKEY=
+```
 
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
 
@@ -147,6 +151,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `DEBUG` — дебаг-режим. Поставьте `False`.
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
+- `YANDEX_GEOCODER_APIKEY` - инструкцию для его получения вы найдете в README выше, в пункте **Как собрать бэкенд**
 
 ## Цели проекта
 
