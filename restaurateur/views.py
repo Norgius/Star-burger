@@ -7,8 +7,9 @@ from django.db.models import Sum, F
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from foodcartapp.models import Product, Restaurant, Order
-
-from foodcartapp.utils import calculate_distance
+from location.models import Location
+from location.utils import get_or_create_coordinates
+from geopy.distance import distance
 
 
 class Login(forms.Form):
@@ -70,15 +71,18 @@ def view_products(request):
 
     products_with_restaurant_availability = []
     for product in products:
-        availability = {item.restaurant_id: item.availability for item in product.menu_items.all()}
-        ordered_availability = [availability.get(restaurant.id, False) for restaurant in restaurants]
+        availability = {item.restaurant_id: item.availability
+                        for item in product.menu_items.all()}
+        ordered_availability = [availability.get(restaurant.id, False)
+                                for restaurant in restaurants]
 
         products_with_restaurant_availability.append(
             (product, ordered_availability)
         )
 
     return render(request, template_name="products_list.html", context={
-        'products_with_restaurant_availability': products_with_restaurant_availability,
+        'products_with_restaurant_availability':
+            products_with_restaurant_availability,
         'restaurants': restaurants,
     })
 
@@ -93,6 +97,7 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     all_restaurants = Restaurant.objects.all()
+    all_locations = Location.objects.all()
     all_orders = Order.objects.exclude(status='DELIVERED')\
         .select_related('selected_restaurant')\
         .prefetch_related('order_elements__product').annotate(
@@ -100,18 +105,27 @@ def view_orders(request):
         ).order_by('-status')\
         .get_restaurants_able_fulfill_order(all_restaurants)
 
+    restaurants_with_coords = {}
+    for restaurant in all_restaurants:
+        coords = get_or_create_coordinates(restaurant.address, all_locations)
+        restaurants_with_coords[restaurant] = coords
+
     for order in all_orders:
+        order_coords = get_or_create_coordinates(order.address, all_locations)
         suitable_restaurants = []
+
         for selected_restaurant in order.selected_restaurants:
-            distance = calculate_distance(
-                order.address, selected_restaurant.address)
-            if distance is None:
+            restaurant_coords = restaurants_with_coords.get(
+                                            selected_restaurant)
+            if order_coords[0] is None or restaurant_coords[0] is None:
                 order.selected_restaurants = None
                 break
+            distance_between = distance(order_coords, restaurant_coords).km
             suitable_restaurant = {'restaurant': selected_restaurant.name,
-                                   'distance': round(distance, 3)
+                                   'distance': round(distance_between, 3)
                                    }
             suitable_restaurants.append(suitable_restaurant)
+
         order.selected_restaurants = sorted(suitable_restaurants,
                                             key=lambda x: x['distance'])
         if order.selected_restaurant and order.status == 'RAW':
