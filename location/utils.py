@@ -35,7 +35,7 @@ def get_or_create_coordinates(address, all_locations):
         if not coord:
             lat, lon = None, None
         else:
-            lat, lon = coord[0], coord[1]
+            lat, lon = coord
         Location.objects.create(
             address=address,
             lat=lat,
