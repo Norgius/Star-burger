@@ -132,7 +132,7 @@ class OrderQuerySet(models.QuerySet):
             .select_related('restaurant', 'product')
         for order in self:
             avalable_restaurants = []
-            for ordered_product in order.order_elements.all():
+            for ordered_product in order.elements.all():
                 avalable_restaurants.append(
                     [menu_item.restaurant for menu_item in menu_items
                      if ordered_product.product.id == menu_item.product.id])
@@ -174,7 +174,6 @@ class Order(models.Model):
         'Способ оплаты',
         max_length=15,
         choices=PAYMENT_CHOICES,
-        default='ELECTRONIC',
         db_index=True,
     )
     address = models.CharField(
@@ -240,13 +239,13 @@ class OrderElement(models.Model):
     order = models.ForeignKey(
         Order,
         verbose_name='заказ',
-        related_name='order_elements',
+        related_name='elements',
         on_delete=models.CASCADE,
     )
     product = models.ForeignKey(
         Product,
         verbose_name='товар',
-        related_name='order_elements',
+        related_name='elements',
         on_delete=models.CASCADE,
     )
     quantity = models.IntegerField(

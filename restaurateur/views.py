@@ -100,8 +100,8 @@ def view_orders(request):
     all_locations = Location.objects.all()
     all_orders = Order.objects.exclude(status='DELIVERED')\
         .select_related('selected_restaurant')\
-        .prefetch_related('order_elements__product').annotate(
-            total_price=Sum(F('order_elements__price'))
+        .prefetch_related('elements__product').annotate(
+            total_price=Sum(F('elements__price'))
         ).order_by('-status')\
         .get_restaurants_able_fulfill_order(all_restaurants)
 
