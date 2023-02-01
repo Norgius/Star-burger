@@ -97,26 +97,32 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     all_restaurants = Restaurant.objects.all()
-    all_locations = Location.objects.all()
-    all_orders = Order.objects.exclude(status='DELIVERED')\
+    orders_in_progress = Order.objects.exclude(status='DELIVERED')\
         .select_related('selected_restaurant')\
         .prefetch_related('elements__product').annotate(
             total_price=Sum(F('elements__price'))
         ).order_by('-status')\
         .get_restaurants_able_fulfill_order(all_restaurants)
 
-    restaurants_with_coords = {}
-    for restaurant in all_restaurants:
-        coords = get_or_create_coordinates(restaurant.address, all_locations)
-        restaurants_with_coords[restaurant] = coords
+    restaurant_and_order_addresses = [restaurant.address
+                                      for restaurant in all_restaurants]
+    for order in orders_in_progress:
+        restaurant_and_order_addresses.append(order.address)
 
-    for order in all_orders:
-        order_coords = get_or_create_coordinates(order.address, all_locations)
+    locations = Location.objects.filter(
+        address__in=restaurant_and_order_addresses)
+    addresses_location = {}
+    for address in restaurant_and_order_addresses:
+        address_coords = get_or_create_coordinates(address, locations)
+        addresses_location[address] = address_coords
+
+    for order in orders_in_progress:
+        order_coords = addresses_location.get(order.address)
         suitable_restaurants = []
 
         for selected_restaurant in order.selected_restaurants:
-            restaurant_coords = restaurants_with_coords.get(
-                                            selected_restaurant)
+            restaurant_coords = addresses_location.get(
+                                            selected_restaurant.address)
             if order_coords[0] is None or restaurant_coords[0] is None:
                 order.selected_restaurants = None
                 break
@@ -133,5 +139,5 @@ def view_orders(request):
             order.save()
 
     return render(request, template_name='order_items.html', context={
-        'order_items': all_orders
+        'order_items': orders_in_progress
     })

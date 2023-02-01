@@ -24,18 +24,18 @@ def fetch_coordinates(address):
     return lat, lon
 
 
-def get_or_create_coordinates(address, all_locations):
+def get_or_create_coordinates(address, locations):
     try:
-        for location in all_locations:
+        for location in locations:
             if address == location.address:
                 lat, lon = location.lat, location.lon
                 return lat, lon
-        coord = fetch_coordinates(address)
+        coords = fetch_coordinates(address)
 
-        if not coord:
+        if not coords:
             lat, lon = None, None
         else:
-            lat, lon = coord
+            lat, lon = coords
         Location.objects.create(
             address=address,
             lat=lat,
