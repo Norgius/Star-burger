@@ -67,8 +67,14 @@ YANDEX_GEOCODER_APIKEY=
 ROLLBAR_TOKEN=
 ```
 
-Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
+Создайте файл базы данных PostgreSQL (можете воспользоваться [инструкцией](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04)). Вам потребуется прописать в `.env` данные, которые вы указали при создании базы данных:
+```
+POSTGRES_DB_NAME=
+POSTGRES_DB_USER=
+POSTGRES_DB_PASSWORD=
+```
 
+Теперь отмигрируйте базу данных следующей командой:
 ```sh
 python manage.py migrate
 ```
@@ -157,6 +163,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_GEOCODER_APIKEY` - инструкцию для его получения вы найдете в README выше, в пункте **Как собрать бэкенд**
 - `ROLLBAR_TOKEN` - инструкцию вы также сможете найти выше. Но для prod-версии необходимо прописать в файле `.env` параметр `ROLLBAR_ENV`. Он необходим для того, чтобы знать что сайт уже развернут на продакшене и ошибки в будущем можно будет фильтровать по конкретной инсталляции. Пример `ROLLBAR_ENV=Ivan_production`.
+- Пропишите настройки созданной вами базы данных `POSTGRES_DB_NAME,
+POSTGRES_DB_USER, POSTGRES_DB_PASSWORD`. [см. инструкцию](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04)
 
 ## Цели проекта
 
