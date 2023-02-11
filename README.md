@@ -167,14 +167,13 @@ Parcel будет следить за файлами в каталоге `bundle
 POSTGRES_DB_USER, POSTGRES_DB_PASSWORD`. [см. инструкцию](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04)
 
 ## Обновление проекта на сервере
-После того, как проект будет развернут, любые изменения которые вы будете заливать на `Git` можно загружать `bash`-скриптом `deploy_star_burger.sh`. Скрипт лежит в корневой директории проекта. Перед первым запуском выполните команду:
-```
-chmod ugo+x deploy_star_burger.sh
-```
+После того, как проект будет развернут, любые изменения которые вы будете заливать на `Git` можно загружать `bash`-скриптом `deploy_star_burger.sh`. Скрипт лежит в корневой директории проекта. 
+
 Далее просто запустите скрипт и дождитесь успешного выполнения:
 ```
-./deploy_star_burger.sh
+bash deploy_star_burger.sh
 ```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
