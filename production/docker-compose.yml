@@ -7,8 +7,6 @@ services:
     image: postgres:14.6-alpine
     env_file:
       - ../.env
-    ports:
-      - '6000:5432'
     volumes:
       - postgres:/var/lib/postgresql/data/
     restart: unless-stopped
@@ -55,7 +53,7 @@ services:
     depends_on:
       - backend
     ports:
-      - 8080:8080
+      - 80:80
     restart: unless-stopped
 
 volumes:
