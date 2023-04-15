@@ -199,7 +199,7 @@ docker exec -it backend python manage.py migrate --noinput
 ### _Production_
 Находясь в корневой директории проекта создайте 2 каталога командой:
 ```
-mkdir media collectstatic
+mkdir media staticfiles
 ```
 Перейдите в директорию `production/`. Дополните `nginx.conf` вашим `ip` или `доменом` на строке, содержащей `listen`
 ```
