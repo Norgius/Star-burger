@@ -197,6 +197,10 @@ docker exec -it backend python manage.py migrate --noinput
 ```
 Сайт будет доступен по [адресу](http://127.0.0.1:8000/).
 ### _Production_
+Находясь в корневой директории проекта создайте 2 каталога командой:
+```
+mkdir media collectstatic
+```
 Перейдите в директорию `production/`. Дополните `nginx.conf` вашим `ip` или `доменом` на строке, содержащей `listen`
 ```
 listen ********:80;
