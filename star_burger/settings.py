@@ -93,10 +93,11 @@ MEDIA_URL = '/media/'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://{user}:{password}@localhost:5432/{name}'.format(
-            user=env.str('POSTGRES_DB_USER'),
-            password=env.str('POSTGRES_DB_PASSWORD'),
-            name=env.str('POSTGRES_DB_NAME')
+        default='postgres://{user}:{password}@{db_host}:5432/{name}'.format(
+            user=env.str('POSTGRES_USER'),
+            password=env.str('POSTGRES_PASSWORD'),
+            db_host=env.str('POSTGRES_DB_HOST'),
+            name=env.str('POSTGRES_DB')
         )
     )
 }
