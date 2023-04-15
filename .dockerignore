@@ -1,0 +1,6 @@
+bundles/**
+node_modules/
+media/
+env/
+.env
+staticfiles/
