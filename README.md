@@ -70,9 +70,10 @@ ROLLBAR_TOKEN=
 
 Создайте файл базы данных PostgreSQL (можете воспользоваться [инструкцией](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04)). Вам потребуется прописать в `.env` данные, которые вы указали при создании базы данных:
 ```
-POSTGRES_DB_NAME=
-POSTGRES_DB_USER=
-POSTGRES_DB_PASSWORD=
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB_HOST=
 ```
 
 Теперь отмигрируйте базу данных следующей командой:
@@ -164,8 +165,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_GEOCODER_APIKEY` - инструкцию для его получения вы найдете в README выше, в пункте **Как собрать бэкенд**
 - `ROLLBAR_TOKEN` - инструкцию вы также сможете найти выше. Но для prod-версии необходимо прописать в файле `.env` параметр `ROLLBAR_ENV`. Он необходим для того, чтобы знать что сайт уже развернут на продакшене и ошибки в будущем можно будет фильтровать по конкретной инсталляции. Пример `ROLLBAR_ENV=Ivan_production`.
-- Пропишите настройки созданной вами базы данных `POSTGRES_DB_NAME,
-POSTGRES_DB_USER, POSTGRES_DB_PASSWORD`. [см. инструкцию](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04)
+- Пропишите настройки созданной вами базы данных `POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB_HOST`. [см. инструкцию](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-20-04)
 
 ## Обновление проекта на сервере
 После того, как проект будет развернут, любые изменения которые вы будете заливать на `Git` можно загружать `bash`-скриптом `deploy_star_burger.sh`. Скрипт лежит в корневой директории проекта.
@@ -178,6 +178,34 @@ chmod 755 deploy_star_burger.sh
 ```
 ./deploy_star_burger.sh
 ```
+
+## Развертывание проекта с помощью `Docker`
+Обратитесь к пункту `Как запустить prod-версию сайта`, чтобы заполнить `.env` файл необходимыми переменными окружения.
+
+Настройки, что для `Development`, что для `Production` фактически идентичны, разница лишь в настройке `DEBUG`. Для `Production` она со значением `False`.
+
+### _Development_
+Разворачиваем проект после того, как соберём фронтенд. Обратитесь к пункту из `README` - `Собрать фронтенд`.
+
+Далее, находясь в корневой директории проекта выполните команду:
+```
+docker compose up -d
+```
+После того, как проект будет развернут необходимо выполнить маграции:
+```
+docker exec -it backend python manage.py migrate --noinput
+```
+Сайт будет доступен по [адресу](http://127.0.0.1:8000/).
+### _Production_
+Перейдите в директорию `production/` и выполните команду:
+```
+docker compose up -d
+```
+После того, как проект будет развернут необходимо выполнить маграции:
+```
+docker exec -it backend python manage.py migrate --noinput
+```
+Сайт будет доступен на вышем `ip-сервере`, который вы арендовали.
 
 ## Цели проекта
 
