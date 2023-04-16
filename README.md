@@ -187,7 +187,7 @@ chmod 755 deploy_star_burger.sh
 ### _Development_
 Разворачиваем проект после того, как соберём фронтенд. Обратитесь к пункту из `README` - `Собрать фронтенд`.
 
-Далее, находясь в корневой директории проекта выполните команду:
+Перейдите в директорию `docker_development/` и выполните команду:
 ```
 docker compose up -d
 ```
@@ -201,7 +201,7 @@ docker exec -it backend python manage.py migrate --noinput
 ```
 mkdir media staticfiles
 ```
-Перейдите в директорию `production/`. Дополните `nginx.conf` вашим `ip` или `доменом` на строке, содержащей `listen`
+Перейдите в директорию `docker_production/`. Дополните `nginx.conf` вашим `ip` или `доменом` на строке, содержащей `listen`
 ```
 listen ********:80;
 ```
@@ -214,6 +214,22 @@ docker compose up -d
 docker exec -it backend python manage.py migrate --noinput
 ```
 Сайт будет доступен на вышем `ip-сервере/домене`, который вы арендовали.
+
+### _Production обновление кода_
+Для обновления кода в директории `docker_production/` лежит файл `deploy.sh`. С его помощью можно обновить контейнеры.
+
+Разрешите исполнять файл скрипта следующей командой:
+```
+chmod 755 deploy deploy.sh
+```
+Выполните сам скрипт:
+```
+./deploy.sh
+```
+Не забудьте выполнить миграции:
+```
+docker exec -it backend python manage.py migrate --noinput
+```
 
 ## Цели проекта
 
