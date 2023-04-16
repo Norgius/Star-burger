@@ -6,28 +6,28 @@ services:
     container_name: db
     image: postgres:14.6-alpine
     env_file:
-      - ./.env
-    ports:
-      - '6000:5432'
+      - ../.env
     volumes:
       - postgres:/var/lib/postgresql/data
 
   backend:
     container_name: backend
     build:
-      context: .
+      context: ../.
       target: backend
     ports:
       - '8000:8000'
     volumes:
-      - ./bundles:/app/bundles
-      - ./media:/app/media
-      - ./staticfiles:/app/staticfiles
+      - ../bundles:/app/bundles
+      - ../media:/app/media
+      - ../staticfiles:/app/staticfiles
     env_file:
-      - ./.env
+      - ../.env
     command: python /app/manage.py runserver 0.0.0.0:8000
     depends_on:
       - db
+    expose:
+      - 8000
 
 volumes:
   postgres:
