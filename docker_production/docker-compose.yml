@@ -15,8 +15,7 @@ services:
     container_name: backend
     build:
       context: ../.
-      dockerfile: Dockerfile
-      target: backend
+      dockerfile: Dockerfile.backend
     ports:
       - '8000:8000'
     volumes:
@@ -37,17 +36,15 @@ services:
     container_name: frontend
     build:
       context: ../.
-      dockerfile: Dockerfile
-      target: frontend
+      dockerfile: Dockerfile.frontend
     volumes:
       - ../bundles:/app/bundles
 
   nginx:
     container_name: nginx
     build:
-      context: ../.
-      dockerfile: Dockerfile
-      target: nginx
+      context: .
+      dockerfile: Dockerfile.nginx
     volumes:
       - ../media:/app/media/
       - ../staticfiles:/app/staticfiles/
