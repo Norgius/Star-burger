@@ -13,7 +13,6 @@ python manage.py collectstatic --noinput
 python manage.py migrate --noinput
 
 systemctl restart burger_backend.service
-systemctl reload nginx.service
 
 last_commit=$(git rev-parse HEAD)
 curl -H "X-Rollbar-Access-Token: 0b5d8ca7d05548969b1611c26e7a4767" \
